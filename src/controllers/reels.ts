@@ -1,4 +1,5 @@
 import express from "express";
+import { Types } from "mongoose";
 import { catchAsync } from "../utils/asyncHandler";
 import { AppError } from "../utils/AppError";
 import { Reel } from "../models/Reel";
@@ -33,10 +34,10 @@ export const getReels = catchAsync(async (_req: express.Request, res: express.Re
 
 export const getReelById = catchAsync(async (req: express.Request, res: express.Response) => {
   await seedAllTradeHubData();
-  const reel = await Reel.findOne({
-    $or: [{ slug: req.params.id }, { _id: req.params.id }],
-    isActive: true,
-  });
+  const id = String(req.params.id);
+  const reel =
+    (await Reel.findOne({ slug: id, isActive: true })) ||
+    (Types.ObjectId.isValid(id) ? await Reel.findOne({ _id: id, isActive: true }) : null);
   if (!reel) throw new AppError("Reel not found", 404);
   res.status(200).json({ status: "success", data: { reel: formatReel(reel) } });
 });
