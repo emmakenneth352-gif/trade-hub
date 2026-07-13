@@ -165,4 +165,25 @@ export const env = {
   get cloudinaryApiSecret(): string | undefined {
     return process.env.CLOUDINARY_API_SECRET;
   },
+
+  /** Brevo (Sendinblue) — transactional email / OTP. BRAVO_API_KEY is accepted as alias. */
+  get brevoApiKey(): string | undefined {
+    return (
+      process.env.BREVO_API_KEY ||
+      process.env.BRAVO_API_KEY ||
+      process.env.SENDINBLUE_API_KEY
+    );
+  },
+
+  get brevoSenderEmail(): string | undefined {
+    return process.env.BREVO_SENDER_EMAIL || process.env.BRAVO_SENDER_EMAIL;
+  },
+
+  get brevoSenderName(): string {
+    return (
+      process.env.BREVO_SENDER_NAME ||
+      process.env.BRAVO_SENDER_NAME ||
+      "Trade Hub"
+    );
+  },
 };
