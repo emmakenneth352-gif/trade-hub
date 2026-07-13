@@ -44,7 +44,7 @@ Supported `serviceId` values for purchase: `airtime`, `data`, `gotv`, `bills`, `
 ## Deploy (Railway, Render, etc.)
 
 1. Connect this repo: [trade-hub](https://github.com/emmakenneth352-gif/trade-hub)
-2. **Build command:** `npm run build`
+2. **Build command:** `npm install && npm run build` (or just `npm install` — `postinstall` runs the build)
 3. **Start command:** `npm start`
 4. Set environment variables in your host dashboard (do not commit `.env`):
 
