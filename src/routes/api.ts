@@ -99,10 +99,10 @@ apiRouter.get("/marketplace/products/:id", getProductById);
 apiRouter.post("/marketplace/products", protectRoute, createProduct);
 
 apiRouter.get("/reels", getReels);
-apiRouter.get("/reels/:id", getReelById);
 apiRouter.get("/reels/:id/comments", getReelComments);
 apiRouter.post("/reels/:id/comments", protectRoute, addReelComment);
 apiRouter.post("/reels/:id/like", protectRoute, likeReel);
+apiRouter.get("/reels/:id", getReelById);
 
 apiRouter.get("/live", getLiveSessions);
 apiRouter.get("/live/access", protectRoute, getLiveAccess);
