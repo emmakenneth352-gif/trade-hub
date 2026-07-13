@@ -10,14 +10,44 @@ const isDevMode = (): boolean => {
   return !env || env === "development" || env === "test";
 };
 
+function resolveDatabaseUrl(): string {
+  const raw = (process.env.DATABASE || process.env.MONGODB_URI || "").trim();
+  const url = raw.replace(
+    "<PASSWORD>",
+    encodeURIComponent(process.env.DBPASSWORD || "")
+  );
+
+  if (!url) {
+    if (isDevMode()) return "mongodb://127.0.0.1:27017/tradehub";
+    throw new AppError(
+      "DATABASE is not set. Add your MongoDB Atlas connection string to Render environment variables.",
+      500
+    );
+  }
+
+  if (url.startsWith("postgresql://") || url.startsWith("postgres://")) {
+    throw new AppError(
+      "DATABASE points to PostgreSQL, but Trade Hub uses MongoDB. Replace DATABASE with your mongodb+srv:// Atlas URL and remove the Postgres DATABASE_URL if linked.",
+      500
+    );
+  }
+
+  if (!url.startsWith("mongodb://") && !url.startsWith("mongodb+srv://")) {
+    throw new AppError(
+      "DATABASE must start with mongodb:// or mongodb+srv://. Check for extra quotes or spaces in Render.",
+      500
+    );
+  }
+
+  return url;
+}
+
 export const env = {
   port: Number(process.env.PORT) || 3000,
 
-  database:
-    process.env.DATABASE?.replace(
-      "<PASSWORD>",
-      encodeURIComponent(process.env.DBPASSWORD || "")
-    ) || "mongodb://127.0.0.1:27017/tradehub",
+  get database(): string {
+    return resolveDatabaseUrl();
+  },
 
   get jwtSecret(): string {
     const value =

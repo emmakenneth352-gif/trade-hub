@@ -58,7 +58,7 @@ const userSchema = new Schema<IUser, IUserModel>(
     emailVerified: { type: Boolean, default: false },
     phoneVerified: { type: Boolean, default: false },
     premium: { type: Boolean, default: false },
-    referalCode: { type: String, unique: true, sparse: true },
+    referalCode: { type: String, sparse: true },
     email: {
       type: String,
       trim: true,
@@ -118,6 +118,7 @@ const userSchema = new Schema<IUser, IUserModel>(
 
 userSchema.index({ email: 1 }, { unique: true, sparse: true });
 userSchema.index({ phone: 1 }, { unique: true, sparse: true });
+userSchema.index({ referalCode: 1 }, { unique: true, sparse: true });
 userSchema.index({ location: "2dsphere" });
 
 userSchema.statics.findByEmail = function (email: string) {
