@@ -10,9 +10,51 @@ const isDevMode = (): boolean => {
   return !env || env === "development" || env === "test";
 };
 
+function normalizeEnvValue(value: string | undefined): string {
+  if (!value) return "";
+  let v = value.trim();
+
+  if (v.toUpperCase().startsWith("DATABASE=")) {
+    v = v.slice("DATABASE=".length).trim();
+  }
+  if (v.toUpperCase().startsWith("MONGODB_URI=")) {
+    v = v.slice("MONGODB_URI=".length).trim();
+  }
+
+  while (
+    (v.startsWith('"') && v.endsWith('"')) ||
+    (v.startsWith("'") && v.endsWith("'"))
+  ) {
+    v = v.slice(1, -1).trim();
+  }
+
+  return v;
+}
+
+function pickDatabaseRaw(): string {
+  const candidates = [
+    process.env.DATABASE,
+    process.env.MONGODB_URI,
+    process.env.MONGODB_URL,
+    process.env.DATABASE_URL,
+  ];
+
+  for (const candidate of candidates) {
+    const normalized = normalizeEnvValue(candidate);
+    if (!normalized) continue;
+    if (
+      normalized.startsWith("mongodb://") ||
+      normalized.startsWith("mongodb+srv://")
+    ) {
+      return normalized;
+    }
+  }
+
+  return normalizeEnvValue(process.env.DATABASE || process.env.MONGODB_URI || "");
+}
+
 function resolveDatabaseUrl(): string {
-  const raw = (process.env.DATABASE || process.env.MONGODB_URI || "").trim();
-  const url = raw.replace(
+  const url = pickDatabaseRaw().replace(
     "<PASSWORD>",
     encodeURIComponent(process.env.DBPASSWORD || "")
   );
@@ -20,21 +62,22 @@ function resolveDatabaseUrl(): string {
   if (!url) {
     if (isDevMode()) return "mongodb://127.0.0.1:27017/tradehub";
     throw new AppError(
-      "DATABASE is not set. Add your MongoDB Atlas connection string to Render environment variables.",
+      "DATABASE is not set. In Render → Environment, add key DATABASE with your MongoDB Atlas mongodb+srv:// connection string.",
       500
     );
   }
 
   if (url.startsWith("postgresql://") || url.startsWith("postgres://")) {
     throw new AppError(
-      "DATABASE points to PostgreSQL, but Trade Hub uses MongoDB. Replace DATABASE with your mongodb+srv:// Atlas URL and remove the Postgres DATABASE_URL if linked.",
+      "DATABASE points to PostgreSQL, but Trade Hub uses MongoDB. Delete DATABASE_URL from Postgres and set DATABASE to your mongodb+srv:// Atlas URL.",
       500
     );
   }
 
   if (!url.startsWith("mongodb://") && !url.startsWith("mongodb+srv://")) {
+    const preview = url.slice(0, 20).replace(/[^\x20-\x7E]/g, "?");
     throw new AppError(
-      "DATABASE must start with mongodb:// or mongodb+srv://. Check for extra quotes or spaces in Render.",
+      `DATABASE is invalid (starts with "${preview}..."). In Render, key must be DATABASE and value must start with mongodb+srv:// — no quotes, no "DATABASE=" prefix.`,
       500
     );
   }

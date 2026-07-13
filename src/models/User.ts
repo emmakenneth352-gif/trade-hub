@@ -58,12 +58,11 @@ const userSchema = new Schema<IUser, IUserModel>(
     emailVerified: { type: Boolean, default: false },
     phoneVerified: { type: Boolean, default: false },
     premium: { type: Boolean, default: false },
-    referalCode: { type: String, sparse: true },
+    referalCode: { type: String },
     email: {
       type: String,
       trim: true,
       lowercase: true,
-      sparse: true,
       validate: {
         validator: (v: string) => !v || validator.isEmail(v),
         message: "Please provide a valid email",
@@ -71,7 +70,6 @@ const userSchema = new Schema<IUser, IUserModel>(
     },
     phone: {
       type: String,
-      sparse: true,
       validate: {
         validator: (v: string) => !v || validator.isMobilePhone(v, "any"),
         message: "Please provide a valid phone number",

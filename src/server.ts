@@ -5,7 +5,7 @@ import { env } from "./config/env";
 
 const start = async () => {
   await mongoose.connect(env.database);
-  console.log("MongoDB connected:", env.database);
+  console.log("MongoDB connected");
 
   app.listen(env.port, () => {
     console.log(`Trade Hub API running on http://localhost:${env.port}`);
